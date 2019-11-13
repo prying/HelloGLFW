@@ -1,0 +1,9 @@
+# meta stuff
+.vs/
+.vscode/
+CMakeSettings.json
+
+# Build related
+build/
+out/
+
