@@ -81,32 +81,50 @@ int main(void){
 
 	// Set up vertex data (and buffers) and config vertex attibutes
 	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
-	};
-	unsigned int indices[] = { 
-		0, 1, 3,   // first triangle
-		1, 2, 3    // second triangle
+		-0.5f, 0.5f, 0.0f,
+		-0.75f, -0.5f, 0.0f,
+		-0.25f, -0.5f, 0.0f,
+		0.5f, 0.5f, 0.0f,
+		0.25f, -0.5f, 0.0f,
+		0.75f, -0.5f, 0.0f 
 	};
 
-	GLuint VBO, VAO, EBO;
+	float colours[] = {
+		1.f, 0.f, 0.f,
+		0.f, 1.f, 0.f,
+		0.f, 0.f, 1.f,
+		1.f, 0.f, 0.f,
+		0.f, 1.f, 0.f,
+		0.f, 0.f, 1.f
+	};
+
+	unsigned int indices[] = { 
+		0, 1, 2,   // first triangle
+		3, 4, 5    // second triangle
+	};
+
+	GLuint VBO, cVBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO); // All the settings live in the VAO
 	glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VBO);
+	glGenBuffers(1, &cVBO);
 
 	// 1. bind Vertex Array Object
 	glBindVertexArray(VAO);
 	// 2. copy our vertices array in a vertex buffer for OpenGL to use
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void*)0);
+	// Setup colours vbo
+	glBindBuffer(GL_ARRAY_BUFFER, cVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(colours), colours, GL_STATIC_DRAW);
 	// 3. copy our index array in a element buffer for OpenGL to use
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	// 4. then set the vertex attributes pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), (void *)0);
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
 
 
 	// render loop
@@ -117,8 +135,10 @@ int main(void){
 
 		glUseProgram(shaderProgram.get());
 		glBindVertexArray(VAO);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 
 		// Check and call events + swap buffers
 		glfwSwapBuffers(window);

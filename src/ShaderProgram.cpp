@@ -27,9 +27,22 @@ void ShaderProgram::addShader(const char* filename, GLenum type) {
 	char infoLog[INFOLOG_SIZE];
 
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+	std::string typeStr;
 	if (!success){
+		switch (type)
+		{
+		case GL_VERTEX_SHADER:
+			typeStr = "VERTEX";
+			break;
+		case GL_FRAGMENT_SHADER:
+			typeStr = "FRAGMENT";
+			break;
+		default:
+			typeStr = "UNKNOW";
+			break;
+		}
 		glGetShaderInfoLog(shader, sizeof(infoLog), NULL, infoLog);
-		std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+		std::cout << "ERROR::SHADER::" << typeStr << "::COMPILATION_FAILED\n" << infoLog << std::endl;
 	}
 	// Add shader to list 
 	compliedShaders.push_back(shader);
