@@ -8,9 +8,6 @@ set(SOURCE_FILES
 	src/tools.cpp
 	src/ShaderProgram.cpp)
 
-# Add config stuff
-file(COPY shaders DESTINATION ${CMAKE_BINARY_DIR})
-
 # GLFW
 # set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 # set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
@@ -31,21 +28,7 @@ add_executable(HelloGLFW ${SOURCE_FILES} ${TINYCTHREAD} ${GETOPT} ${GLAD})
 
 target_link_libraries(HelloGLFW glfw ${GLFW_LIBRARIES})
 
-# Salamandar
-# Copy single files
-macro(resource_files files)
-    foreach(file ${files})
-        message(STATUS "Copying resource ${file}")
-        file(COPY ${file} DESTINATION ${Work_Directory})
-    endforeach()
-endmacro()
-
-# Copy full directories
-macro(resource_dirs dirs)
-    foreach(dir ${dirs})
-        # Replace / at the end of the path (copy dir content VS copy dir)
-        string(REGEX REPLACE "/+$" "" dirclean "${dir}")
-        message(STATUS "Copying resource ${dirclean}")
-        file(COPY ${dirclean} DESTINATION ${Work_Directory})
-    endforeach()
-endmacro()
+# Add shaders dir to target
+add_custom_command(TARGET HelloGLFW POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/shaders/ $<TARGET_FILE_DIR:HelloGLFW>)
