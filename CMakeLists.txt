@@ -24,11 +24,20 @@ set(GETOPT "${GLFW_SOURCE_DIR}/deps/getopt.h"
 set(TINYCTHREAD "${GLFW_SOURCE_DIR}/deps/tinycthread.h"
                 "${GLFW_SOURCE_DIR}/deps/tinycthread.c")
 
+# GLM
+add_subdirectory(lib/glm)
+include_directories(lib/glm)
+include_directories(lib/glm/glm)
+
 add_executable(HelloGLFW ${SOURCE_FILES} ${TINYCTHREAD} ${GETOPT} ${GLAD})
 
-target_link_libraries(HelloGLFW glfw ${GLFW_LIBRARIES})
+target_link_libraries(HelloGLFW glfw ${GLFW_LIBRARIES} )
 
 # Add shaders dir to target
 add_custom_command(TARGET HelloGLFW POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/shaders/ $<TARGET_FILE_DIR:HelloGLFW>)
+                       ${CMAKE_SOURCE_DIR}/shaders/ $<TARGET_FILE_DIR:HelloGLFW>/shaders/)
+
+add_custom_command(TARGET HelloGLFW POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                           ${CMAKE_SOURCE_DIR}/resources/ $<TARGET_FILE_DIR:HelloGLFW>/resources)
