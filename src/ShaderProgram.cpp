@@ -78,6 +78,16 @@ GLuint ShaderProgram::get(){
 	return program;
 }
 
+void ShaderProgram::use(){
+
+	if (!program){
+		std::cout << "Error no linked shader program\n";
+		throw errno;
+	}
+	glUseProgram(program);
+	return;
+}
+
 void ShaderProgram::deleteProgram(){
 	glDeleteProgram(program);
 	program = NULL;

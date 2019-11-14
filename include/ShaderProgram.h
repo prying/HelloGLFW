@@ -18,7 +18,7 @@ public:
 	~ShaderProgram();
 
 	/**
-	 * @brief Adds and compiles the shader
+	 * @brief Adds and compiles the shader, needs to be called befor ShaderProgram::link()
 	 * 
 	 * @param filename of the shader
 	 * @param type i.e GL_VERTEX_SHADER
@@ -38,6 +38,12 @@ public:
 	 * @return complied shader
 	 */
 	GLuint get();
+
+	/**
+	 * @brief Runs/uses the shader program (glUseProgram)
+	 * 
+	 */
+	void use();
 
 	/**
 	 * @brief Deletes current shader program
