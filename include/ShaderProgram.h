@@ -4,6 +4,7 @@
 
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 /**
  * @brief shader loader object loads shaders then links them
@@ -75,4 +76,12 @@ public:
 	 * @param value 
 	 */
 	void setUniform(const std::string &name, float x, float y, float z);
+
+	/**
+	 * @brief Set the Uniform object
+	 * 
+	 * @param name of the variable
+	 * @param mat 4x4 glm matrix
+	 */
+	void setUniform(const std::string &name, glm::mat4 mat);
 };
