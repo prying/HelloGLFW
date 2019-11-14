@@ -1,9 +1,9 @@
-#include "shaderProgram.h"
+#include "shaderProgram.hpp"
 
 #include <string>
 #include <iostream>
 #include <algorithm>
-#include "tools.h"
+#include "tools.hpp"
 #include <glm\gtc\type_ptr.hpp>
 
 #define INFOLOG_SIZE 512

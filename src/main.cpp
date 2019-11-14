@@ -12,7 +12,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "ShaderProgram.h"
+#include "ShaderProgram.hpp"
 
 #define VIEWPORT_W 800
 #define VIEWPORT_H 600
@@ -145,6 +145,7 @@ int main(void){
 
 		// Rotate image
 		glm::mat4 trans = glm::mat4(1.0f);
+		trans = glm::translate(trans, glm::vec3(0.5f, 0.0f, 0.0f));
 		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 		shaderProgram.setUniform("transform", trans);
 
