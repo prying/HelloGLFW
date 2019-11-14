@@ -6,7 +6,8 @@ include_directories(include)
 set(SOURCE_FILES 
 	src/main.cpp
 	src/tools.cpp
-	src/ShaderProgram.cpp)
+    src/ShaderProgram.cpp
+    src/stb_image.cpp)
 
 # GLFW
 # set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -30,5 +31,10 @@ target_link_libraries(HelloGLFW glfw ${GLFW_LIBRARIES})
 
 # Add shaders dir to target
 add_custom_command(TARGET HelloGLFW POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_SOURCE_DIR}/shaders/ $<TARGET_FILE_DIR:HelloGLFW>)
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       ${CMAKE_SOURCE_DIR}/shaders/ $<TARGET_FILE_DIR:HelloGLFW>/shaders/)
+                       
+# Add resources dir to target
+add_custom_command(TARGET HelloGLFW POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        ${CMAKE_SOURCE_DIR}/resources/ $<TARGET_FILE_DIR:HelloGLFW>/resources/)

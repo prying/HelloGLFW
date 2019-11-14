@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 
 #include "linmath.h"
+#include "stb_image.h"
 
 #include "ShaderProgram.h"
 
@@ -14,6 +15,8 @@
 #define VIEWPORT_H 600
 
 #define VSYNC_ON 1
+
+float alphaMix = 0.0f;
 
 // Prototypes
 void error_callback(int error, const char* description);
@@ -81,10 +84,11 @@ int main(void){
 
 	// Set up vertex data (and buffers) and config vertex attibutes
 	float vertices[] = {
-		 0.5f,  0.5f, 0.0f,  // top right
-		 0.5f, -0.5f, 0.0f,  // bottom right
-		-0.5f, -0.5f, 0.0f,  // bottom left
-		-0.5f,  0.5f, 0.0f   // top left 
+		// Pos				// colours		  // Texture	
+		 0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, // top right
+		 0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, // bottom left
+		-0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = { 
 		0, 1, 3,   // first triangle
@@ -105,17 +109,85 @@ int main(void){
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 	// 4. then set the vertex attributes pointers
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6*sizeof(float)));
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
 
+	GLuint texture1, texture2;
+	glGenTextures(1, &texture1);
+	glBindTexture(GL_TEXTURE_2D, texture1);
+
+	// Settings
+	// wrap image contiously
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// how the image is scaled 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	int width, height, nChannels;
+	stbi_set_flip_vertically_on_load(true);
+	unsigned char *data = stbi_load("resources/waterTile.png", &width, &height, &nChannels, 0);
+
+	if (!data)
+		std::cout << "Failed to load texture\n";
+
+	// Bind texture to GL_TEXTURE_2D and create minimap
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(data);
+
+	// Sprite 2
+	glGenTextures(1, &texture2);
+	glBindTexture(GL_TEXTURE_2D, texture2);
+
+	// Settings
+	// wrap image contiously
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	// how the image is scaled 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	// Flip water texture
+	stbi_set_flip_vertically_on_load(false);
+	data = stbi_load("resources/container.jpg", &width, &height, &nChannels, 0);
+
+	if (!data)
+		std::cout << "Failed to load texture\n";
+
+	// Bind texture to GL_TEXTURE_2D and create minimap
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	stbi_image_free(data);
+
+	// Tell opengl how to deal with the textures
+	shaderProgram.use();
+	shaderProgram.setUniform("texture1", 0);
+	shaderProgram.setUniform("texture2", 1);
+
+	alphaMix = 0.5f;
+	shaderProgram.setUniform("alphaMix", alphaMix);
 
 	// render loop
 	while (!glfwWindowShouldClose(window)) {
 		
-		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClearColor(0.1f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		shaderProgram.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2);
+
+		shaderProgram.setUniform("alphaMix", alphaMix);
+
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -153,4 +225,11 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+	if (key == GLFW_KEY_UP)
+		alphaMix = alphaMix < 1.0f ? alphaMix+0.02f: alphaMix;
+
+	if (key == GLFW_KEY_DOWN)
+		alphaMix = alphaMix > 0.0f ? alphaMix-0.02f: alphaMix;
+
 }
