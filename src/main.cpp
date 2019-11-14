@@ -156,6 +156,17 @@ int main(void){
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+		// scale image
+		trans = glm::mat4(1.0f);
+		trans = glm::translate(trans, glm::vec3(-0.5f, 0.5f, 0.0f));
+		float scale = sinf(glfwGetTime());
+		trans = glm::scale(trans, glm::vec3(scale, scale, scale));
+		shaderProgram.setUniform("transform", trans);
+
+		glBindVertexArray(VAO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
 		// Check and call events + swap buffers
 		glfwSwapBuffers(window);
 		glfwPollEvents();
