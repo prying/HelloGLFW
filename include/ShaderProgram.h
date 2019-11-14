@@ -50,4 +50,28 @@ public:
 	 * 
 	 */
 	void deleteProgram();
+
+	/**
+	 * @brief Set the Uniform object
+	 * 
+	 * @param name of the variable
+	 * @param value 
+	 */
+	void setUniform(const std::string &name, int value);
+
+	/**
+	 * @brief Set the Uniform object
+	 * 
+	 * @param name of the variable
+	 * @param value 
+	 */
+	void setUniform(const std::string &name, float value);
+
+	/**
+	 * @brief Set the Uniform object
+	 * 
+	 * @param name of the variable
+	 * @param value 
+	 */
+	void setUniform(const std::string &name, float x, float y, float z);
 };

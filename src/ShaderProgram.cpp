@@ -98,3 +98,15 @@ ShaderProgram::~ShaderProgram(){
 	if (program)
 		deleteProgram();
 }
+
+void ShaderProgram::setUniform(const std::string &name, int value){
+	glUniform1i(glGetUniformLocation(program, name.c_str()), value);
+}
+
+void ShaderProgram::setUniform(const std::string &name, float value){
+	glUniform1f(glGetUniformLocation(program, name.c_str()), value);
+}
+
+void ShaderProgram::setUniform(const std::string &name, float x, float y, float z){
+	glUniform3f(glGetUniformLocation(program, name.c_str()), x, y, z);
+}
