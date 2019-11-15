@@ -7,7 +7,8 @@ set(SOURCE_FILES
 	src/main.cpp
 	src/tools.cpp
     src/ShaderProgram.cpp
-    src/stb_image.cpp)
+    src/stb_image.cpp
+    src/Camera.cpp)
 
 # GLFW
 # set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)

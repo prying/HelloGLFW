@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include "ShaderProgram.hpp"
+#include "Camera.hpp"
 
 #define VIEWPORT_W 800
 #define VIEWPORT_H 600
@@ -23,6 +24,19 @@
 void error_callback(int error, const char* description);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void processInput(GLFWwindow *window);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
+// Camera
+Camera camera = Camera(glm::vec3(0.0f, 0.0f, 3.0f));
+
+// Inital mouse click;
+float lastX = VIEWPORT_W/2.0f;
+float lastY = VIEWPORT_W/2.0f;
+
+float deltaFrame = 0.0f;
+float lastFrame = 0.0f;
 
 int main(void){
 
@@ -52,7 +66,8 @@ int main(void){
 		exit(EXIT_FAILURE);
 	}
 	glfwMakeContextCurrent(window);
-
+	camera.setViewPort(window);
+	
 	// Initilize GLAD
 	if (!gladLoadGL(glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD2\n";
@@ -76,50 +91,50 @@ int main(void){
 
 	// Set up vertex data (and buffers) and config vertex attibutes
 	float vertices[] = {
-	    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-	     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-	     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-	    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-	    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-	    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-	    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-	     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-	    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-	     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-	     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-	    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-	    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-	    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-	     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-	     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-	    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-	    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	// Cube locations 
+	// Cube locations
 	glm::vec3 cubePos[] = {
 		glm::vec3(0.0f, 0.0f, 0.0f),
 		glm::vec3(2.0f, 5.0f, -15.0f),
@@ -176,35 +191,33 @@ int main(void){
 
 	stbi_image_free(imageData);
 
-	// Transformations
-	// Rotate object in local space
-	glm::mat4 model = glm::mat4(1.0f);
-	//model = glm::translate(model, glm::vec3(0.0f, -0.1f, -0.3f));
-	//model = glm::rotate(model, glm::radians(-60.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	//model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-
-	// Idea is we move the world not the camera
-	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));	
-	// Matric ViewSpace -> ClipSpace
-	glm::mat4 proj = glm::perspective(glm::radians(75.0f), (float)VIEWPORT_W/(float)VIEWPORT_H, 0.1f, 100.0f);
-
 	shaderProgram.use();
 	shaderProgram.setUniform("texture1", 0);
 
 	// Use z to work out what needs to be drawn
 	glEnable(GL_DEPTH_TEST);
-	//glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+
+	// Mouse inputs 
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	// render loop
 	while (!glfwWindowShouldClose(window)) {
+		// FPS
+		float currentframe = glfwGetTime();
+		deltaFrame = currentframe - lastFrame;
+		lastFrame = currentframe;
+
+		processInput(window);
+		camera.updateVectors();
 
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shaderProgram.use();
-		shaderProgram.setUniform("view", view);	
-		shaderProgram.setUniform("proj", proj);		
+		shaderProgram.setUniform("view", camera.getViewMatrix());
+		shaderProgram.setUniform("proj", camera.getProjectionMatrix());
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1);
@@ -230,6 +243,8 @@ int main(void){
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 
+	glfwDestroyWindow(window);
+	window = NULL;
 	glfwTerminate();
 	exit(EXIT_SUCCESS);
 }
@@ -254,4 +269,32 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+void processInput(GLFWwindow *window){
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.move(FORWARD, deltaFrame);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.move(BACKWARD, deltaFrame);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.move(LEFT, deltaFrame);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.move(RIGHT, deltaFrame);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        camera.move(UP, deltaFrame);
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
+        camera.move(DOWN, deltaFrame);
+}
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos){
+	
+	float xoffset = xpos - lastX;
+	float yoffset = lastY - ypos;
+	lastX = xpos; lastY = ypos;
+
+	camera.rotate(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
+	camera.zoom(yoffset);
 }
