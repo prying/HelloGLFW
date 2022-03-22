@@ -79,6 +79,7 @@ int main(void){
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	glfwSetKeyCallback(window, key_callback);
+	// test
 
 	// 'vsync'
 	glfwSwapInterval(VSYNC_ON);
